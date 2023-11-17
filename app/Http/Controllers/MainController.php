@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sunset;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -10,15 +11,12 @@ class MainController extends Controller
     public function index() {
         $sunsets = \App\Models\Sunset::orderBy('id', 'desc')->first();
 
-        $sunsetAfter = null;
-        $sunset = null;
         $sunsetAt = null;
         if ($sunsets) {
-            $sunset = $sunsets->sunset_at;
-            $now = Carbon::now()->format('H:i:s');
-            $sunsetAfter = Carbon::parse($sunset)->shortAbsoluteDiffForHumans($now);
             $sunsetAt = Carbon::parse($sunsets->sunset_at)->timezone('Europe/Riga')->format('H:i:s');
         }
+
+        $sunsetAfter = Sunset::getMinutesUntilSunset();
 
         $govee = new GoveeController();
         $state = $govee->getState();

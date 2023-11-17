@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LightActivity;
 use App\Models\Sunset;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -97,7 +98,7 @@ class GoveeController extends Controller
         $sunsetAt = $sunsetObj->sunset_at;
         $completed = $this->checkIfCompleted();
 
-        if ($completed != 1 && Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s')) {
+        if ($completed === false && Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s')) {
             \Log::info('turning lights on');
             $this->index($request,'on');
             $this->saveAsCompleted();
@@ -140,14 +141,21 @@ class GoveeController extends Controller
     }
 
 
-    public function saveAsCompleted() {
-        $filePath = storage_path('completed.txt');
-        file_put_contents($filePath, 1);
+    public function saveAsCompleted() : void {
+        LightActivity::where(['execution_date' => Carbon::now()->format('Y-m-d')])->update(['completed' => true]);
     }
 
     public function checkIfCompleted() {
-        $filePath = storage_path('completed.txt');
-        $content = file_get_contents($filePath);
-        return $content == 1;
+        $exists = LightActivity::where(['execution_date' => Carbon::now()->format('Y-m-d')])->first();
+        if (!$exists) {
+            LightActivity::create(['execution_date' => Carbon::now()->format('Y-m-d'), 'completed' => false]);
+            return false;
+        }
+
+        if ($exists && $exists->completed === "0") {
+            return false;
+        }
+
+        return true;
     }
 }

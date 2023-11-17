@@ -152,7 +152,7 @@ class GoveeController extends Controller
             return false;
         }
 
-        if ($exists && $exists->completed === "0") {
+        if ($exists && $exists->completed === 0) {
             return false;
         }
 

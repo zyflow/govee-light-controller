@@ -21,7 +21,7 @@ class Sunset extends Model
         $time = Carbon::parse($lastSunset->sunset_at)->timezone('Europe/Riga');
 
         if (!$now) {
-            $now = Carbon::now();
+            $now = Carbon::now()->timezone('Europe/Riga');
         }
 
         $alteredDate = Carbon::parse($now)->setTime($time->hour, $time->minute, $time->second);

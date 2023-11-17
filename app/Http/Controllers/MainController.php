@@ -20,7 +20,13 @@ class MainController extends Controller
 
         $govee = new GoveeController();
         $state = $govee->getState();
+        $current_time = Carbon::now()->timezone('Europe/Riga')->format('H:i:s');
 
-        return view('welcome', ['sunset' => $sunsetAfter, 'sunset_at' => $sunsetAt, 'currentlyLights' => $state]);
+        return view('welcome', [
+            'sunset' => $sunsetAfter,
+            'sunset_at' => $sunsetAt,
+            'currentlyLights' => $state,
+            'current_time' => $current_time
+        ]);
     }
 }

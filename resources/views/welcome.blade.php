@@ -36,6 +36,7 @@
                             <div class="ml-12">
                                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
                                     <p>Lets start</p>
+                                    <p>Current time: {{$current_time}}</p>
                                     <p>Sunset at: {{$sunset_at}}</p>
                                     <p>Sunset after: {{$sunset}}</p>
                                     <p>Currently lights: {{$currentlyLights}}</p>

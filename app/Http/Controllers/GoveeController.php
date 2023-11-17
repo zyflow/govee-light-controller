@@ -92,7 +92,7 @@ class GoveeController extends Controller
         return ["status" => "ok"];
     }
 
-    public function checkLights() {
+    public function checkLights() : bool {
         $request = new Request();
         $sunsetObj = Sunset::orderBy('id', 'desc')->firstOrFail();
         $sunsetAt = $sunsetObj->sunset_at;
@@ -102,12 +102,10 @@ class GoveeController extends Controller
             \Log::info('turning lights on');
             $this->index($request,'on');
             $this->saveAsCompleted();
-        } else {
-            \Log::info('Not yet');
-            \Log::info('Not yet');
+            return true;
         }
 
-        return ['sunset' => $sunsetAt];
+        return false;
     }
 
     public function setSunetTime() {
@@ -131,11 +129,11 @@ class GoveeController extends Controller
         curl_close($curl);
 
         $data = json_decode($response);
-        $filePath = storage_path('sunset.txt');
+//        $filePath = storage_path('sunset.txt');
         Sunset::create([
             'sunset_at' => $data->results->sunset
         ]);
-        file_put_contents($filePath, $data->results->sunset);
+//        file_put_contents($filePath, $data->results->sunset);
 
         return ['status' => 'done'];
     }

@@ -1,0 +1,27 @@
+services:
+  #PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cloudsigma.com/php
+    container_name: govee-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www/html/
+    networks:
+      - app-network
+    ports:
+        - "80:80"
+    volumes:
+      - ./:/app
+      - ./:/var/www/html
+
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge

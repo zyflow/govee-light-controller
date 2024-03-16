@@ -135,6 +135,7 @@ class GoveeController extends Controller
         ]);
 //        file_put_contents($filePath, $data->results->sunset);
 
+
         return ['status' => 'done'];
     }
 

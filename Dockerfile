@@ -22,7 +22,7 @@ RUN docker-php-ext-install zip
 WORKDIR /var/www/html/
 
 COPY composer.json composer.lock ./
-COPY .env.example .env ./
+COPY .env.example ./
 COPY . .
 
 RUN composer install --no-interaction

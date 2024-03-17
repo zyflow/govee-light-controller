@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
 && rm -rf /var/lib/apt/lists/* \
 
+
+RUN pecl install excimer
 RUN docker-php-ext-install zip
 
 WORKDIR /var/www/html/

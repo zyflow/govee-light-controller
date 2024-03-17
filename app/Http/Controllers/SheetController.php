@@ -18,7 +18,10 @@ class SheetController extends Controller
         $client->setApplicationName('Google Sheets and php');
         $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
         $client->setAccessType('offline');
-        $client->setAuthConfig("/var/www/html/google_cred.json");
+//        $client->setAuthConfig("google_cred.json");
+        $client->useApplicationDefaultCredentials();
+
+//        $client->setAuthConfig("google_cred.json");
         $this->service = new Google_Service_Sheets($client);
 
         $this->spreadSheetId = env('SPREADSHEET_ID');

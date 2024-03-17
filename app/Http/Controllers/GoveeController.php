@@ -92,20 +92,26 @@ class GoveeController extends Controller
         return ["status" => "ok"];
     }
 
-    public function checkLights() : bool {
-        $request = new Request();
-        $sunsetObj = Sunset::orderBy('id', 'desc')->firstOrFail();
-        $sunsetAt = $sunsetObj->sunset_at;
-        $completed = $this->checkIfCompleted();
+    public function checkLights() : array {
 
-        if ($completed === false && Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s')) {
+        $sheet = new SheetController();
+
+        $sunsetAt = $sheet->getSunset();
+        $completed = $sheet->getExecuted();
+
+        $request = new Request();
+
+        \Log::info(['testing' =>  Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s'),  Carbon::now()->format('H:i:s'), Carbon::parse($sunsetAt)->format('H:i:s')]);
+        if ($completed === "FALSE" && Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s')) {
             \Log::info('turning lights on');
             $this->index($request,'on');
-            $this->saveAsCompleted();
-            return true;
+//            $this->saveAsCompleted($service, $spreedSheetId);
+
+            $sheet->setExecuted();
+            return ['status' => 'switched on'];
         }
 
-        return false;
+        return ['status' => 'done'];
     }
 
     public function setSunetTime() {
@@ -141,9 +147,7 @@ class GoveeController extends Controller
     }
 
 
-    public function saveAsCompleted() : void {
-        LightActivity::where(['execution_date' => Carbon::now()->format('Y-m-d')])->update(['completed' => true]);
-    }
+
 
     public function checkIfCompleted() {
         $exists = LightActivity::where(['execution_date' => Carbon::now()->format('Y-m-d')])->first();

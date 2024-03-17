@@ -16,7 +16,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('govee:check-time')->everyMinute();
-        $schedule->command('govee:set-sunset')->daily();
+        $schedule->command('govee:set-sunset')->daily()->at('09:00');
+        $schedule->command('govee:set-new-day')->daily()->at('09:00');
         // $schedule->command('inspire')->hourly();
     }
 

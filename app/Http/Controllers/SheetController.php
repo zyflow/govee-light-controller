@@ -18,7 +18,9 @@ class SheetController extends Controller
         $client->setApplicationName('Google Sheets and php');
         $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
         $client->setAccessType('offline');
-//        $client->setAuthConfig("google_cred.json");
+        if (env('APP_ENV') === 'local') {
+            $client->setAuthConfig("/var/www/html/google_cred.json");
+        }
         $client->useApplicationDefaultCredentials();
 
 //        $client->setAuthConfig("google_cred.json");
@@ -49,9 +51,26 @@ class SheetController extends Controller
         return $sunsetAt;
     }
 
-    public function setExecuted() {
+    public function setTime($time) {
         $values = [
-            ["TRUE"]
+            [$time]
+        ];
+        $body =  new \Google_Service_Sheets_ValueRange([
+            'values' => $values
+        ]);
+
+        $range = "sunsets!A2:A2";
+
+        $params = [
+            'valueInputOption' => 'RAW',
+        ];
+
+        $this->service->spreadsheets_values->update($this->spreadSheetId, $range, $body, $params);
+    }
+
+    public function setExecuted($value = "TRUE") {
+        $values = [
+            [$value]
         ];
         $body =  new \Google_Service_Sheets_ValueRange([
             'values' => $values

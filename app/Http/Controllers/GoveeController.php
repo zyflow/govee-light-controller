@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\LightActivity;
 use App\Models\Sunset;
 use Carbon\Carbon;
+use DateTime;
+use Google\Service\Sheets\Sheet;
 use Illuminate\Http\Request;
 
 class GoveeController extends Controller
@@ -136,12 +138,12 @@ class GoveeController extends Controller
         curl_close($curl);
 
         $data = json_decode($response);
-//        $filePath = storage_path('sunset.txt');
-        Sunset::create([
-            'sunset_at' => $data->results->sunset
-        ]);
-//        file_put_contents($filePath, $data->results->sunset);
 
+        $sheet = new SheetController();
+        $dateTime = new DateTime($data->results->sunset);
+        $time = $dateTime->format("H:i:s");
+
+        $sheet->setTime($time);
 
         return ['status' => 'done'];
     }

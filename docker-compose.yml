@@ -17,7 +17,7 @@ services:
     ports:
         - "80:80"
     volumes:
-      - ./:/app
+      - ./test.txt:/var/www/html/
       - ./:/var/www/html
 
 

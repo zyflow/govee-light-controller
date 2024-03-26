@@ -7,17 +7,40 @@ use App\Models\Sunset;
 use Carbon\Carbon;
 use DateTime;
 use Google\Service\Sheets\Sheet;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 
 class GoveeController extends Controller
 {
+    private $client;
+    private $headers;
 
-    /**
-     * @param Request $request
-     * @param $submissionID
-     * @param $fileId
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
-     */
+    private $body;
+
+    private $goveeUrl;
+    public function __construct()
+    {
+        $this->client = new Client();
+        $this->goveeUrl = 'https://developer-api.govee.com/v1/devices/control';
+        $this->headers = [
+            'Govee-API-Key' => '1a22991c-c9ee-40ab-9a76-541f60dd02aa',
+            'Content-Type' => 'application/json'
+        ];
+
+        $this->body = [
+            "device" => "55:7C:A4:C1:38:C1:3B:62",
+            "model" => "H6143",
+            "cmd" => [
+                "name" => "color",
+                "value" => [
+                    "r" => 255,
+                    "g" => 100,
+                    "b" => 0
+                ]
+            ]
+        ];
+    }
+
     public function index(Request $request, $turn = 'off') {
         $switch = $turn;
         if ($request->get('turn')) {
@@ -55,6 +78,30 @@ class GoveeController extends Controller
         curl_close($curl);
 
         return $response;
+    }
+
+    public function setBrightness($brightness) {
+        $this->body['cmd']['name'] = "brightness";
+        $this->body['cmd']['value'] = $brightness;
+
+        $request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
+        $res = $this->client->sendAsync($request)->wait();
+
+        return $res->getBody();
+    }
+
+    public function flashTurnOn(Request  $request, $turn = 'on') {
+        $this->body['cmd']['name'] = "color";
+        $this->body['cmd']['value'] = [
+            "r" => 100,
+            "g" => 100,
+            "b" => 100
+        ];
+
+        $request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
+        $res = $this->client->sendAsync($request)->wait();
+
+        return $res->getBody();
     }
 
     public function getState() {
@@ -103,14 +150,37 @@ class GoveeController extends Controller
 
         $request = new Request();
 
-        \Log::info(['testing' =>  Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s'),  Carbon::now()->format('H:i:s'), Carbon::parse($sunsetAt)->format('H:i:s')]);
-        if ($completed === "FALSE" && Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s')) {
-            \Log::info('turning lights on');
-            $this->index($request,'on');
-//            $this->saveAsCompleted($service, $spreedSheetId);
+        $isSunsetTime = Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->format('H:i:s');
+        $is10MinBeforeSunset =  Carbon::now()->format('H:i:s') > Carbon::parse($sunsetAt)->subMinutes(10)->format('H:i:s');
 
-            $sheet->setExecuted();
-            return ['status' => 'switched on'];
+
+
+
+//        dd(Carbon::parse($sunsetAt)->diffInMinutes(Carbon::parse($sunsetAt)->subMinutes(10)));
+        if ($completed === "FALSE"  ) {
+
+            if (!$isSunsetTime && $is10MinBeforeSunset) {
+                $diffInMinutes = Carbon::parse($sunsetAt)->diffInMinutes(Carbon::now());
+
+                $brightness = $diffInMinutes * 10;
+                if ($brightness > 100) {
+                    $brightness = 100;
+                }
+                if ($brightness < 0) {
+                    $brightness = 1;
+                }
+
+                $this->setBrightness($brightness);
+                $this->flashTurnOn($request,'on');
+            }
+
+
+            if ($isSunsetTime) {
+                $this->index($request,'on');
+                $sheet->setExecuted();
+                return ['status' => 'switched on'];
+            }
+
         }
 
         return ['status' => 'done'];
@@ -147,8 +217,6 @@ class GoveeController extends Controller
 
         return ['status' => 'done'];
     }
-
-
 
 
     public function checkIfCompleted() {

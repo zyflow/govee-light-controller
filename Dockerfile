@@ -11,7 +11,7 @@ RUN a2enmod headers
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     vim \
-    default-mysql-client \
+#    default-mysql-client \
     zlib1g-dev \
     libzip-dev \
     unzip \
@@ -24,16 +24,15 @@ RUN docker-php-ext-install zip
 WORKDIR /var/www/html/
 
 COPY composer.json composer.lock ./
-COPY .env.example .env
+COPY .env.example .env ./
 COPY . .
 
-RUN composer install --no-interaction
+RUN composer install
 RUN chmod +x artisan
 
 
 RUN chown -R www-data:www-data \
         /var/www/html/storage \
         /var/www/html/bootstrap/cache
-
+#
 RUN php artisan key:generate
-

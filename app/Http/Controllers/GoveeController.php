@@ -104,6 +104,20 @@ class GoveeController extends Controller
         return $res->getBody();
     }
 
+    public function colorOrange() {
+        $this->body['cmd']['name'] = "color";
+        $this->body['cmd']['value'] = [
+            "r" => 250,
+            "g" => 100,
+            "b" => 0
+        ];
+
+        $request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
+        $res = $this->client->sendAsync($request)->wait();
+
+        return $res->getBody();
+    }
+
     public function getState() {
         $curl = curl_init();
         curl_setopt_array($curl, [
@@ -165,7 +179,9 @@ class GoveeController extends Controller
                 $brightness = $diffInMinutes * 10;
                 if ($brightness > 100) {
                     $brightness = 100;
+                    $this->colorOrange();
                 }
+
                 if ($brightness < 0) {
                     $brightness = 1;
                 }

@@ -13,6 +13,7 @@ class Govee extends Model
 {
 	use HasFactory;
 
+	public static $offtime = "23:50";
 	public function controlSunset($client)
 	{
 		$sheet = new SheetController();
@@ -24,6 +25,7 @@ class Govee extends Model
 			$sheet->setExecuted();
 		}
 
+		$this->turnRedBeforeTurningOff(Carbon::now(), $sunsetAt);
 		$this->turnOffLights();
 		$this->turnOnPreSunSet(Carbon::now(), $sunsetAt);
 	}
@@ -38,6 +40,20 @@ class Govee extends Model
 			$govee->setBrightness(100);
 		}
 	}
+
+	public function turnRedBeforeTurningOff($now) {
+		$isLate = $this->checkIfMinutesBeforeTurnOff($now, 20);
+
+		if ($isLate) {
+			$client = new GoveeClient();
+			$client->colorRed();
+			$client->setBrightness(40);
+
+			return true;
+		}
+
+		return false;
+	}
 	public function turnOffLights($now) {
 		$isLate = $this->checkIfLate($now);
 
@@ -47,6 +63,24 @@ class Govee extends Model
 		}
 	}
 
+	public function checkIfMinutesBeforeTurnOff($now, $timeBeforeTurnOff) {
+		$switchOffTime = "23:50";
+		$switchOffTimeArr = explode(':', $switchOffTime);
+		$switchToRedTime = $now->copy();
+		$switchToRedTime = $switchToRedTime->setTime($switchOffTimeArr[0], $switchOffTimeArr[1]);
+		$switchToRedTime->subMinutes($timeBeforeTurnOff);
+
+		$isChillDay = false;
+		if ($now->weekday() >= 5) {
+			$isChillDay = true;
+		}
+
+		if ($now->gt($switchToRedTime) && $isChillDay == false) {
+			return true;
+		}
+
+		return false;
+	}
 	public function checkIfLate(Carbon $now) {
 		$switchOffTime = "23:50";
 		switch($now->englishDayOfWeek) {

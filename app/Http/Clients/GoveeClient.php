@@ -86,12 +86,28 @@ class GoveeClient
 		return $res->getBody();
 	}
 
-		public function colorOrange()
+	public function colorOrange()
 	{
 		$this->body['cmd']['name'] = "color";
 		$this->body['cmd']['value'] = [
 			"r" => 250,
 			"g" => 100,
+			"b" => 0
+		];
+
+		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
+		$res = $this->client->sendAsync($request)->wait();
+
+		return $res->getBody();
+	}
+
+
+	public function colorRed()
+	{
+		$this->body['cmd']['name'] = "color";
+		$this->body['cmd']['value'] = [
+			"r" => 250,
+			"g" => 0,
 			"b" => 0
 		];
 

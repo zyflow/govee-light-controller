@@ -42,7 +42,7 @@ class Govee extends Model
 	}
 
 	public function turnRedBeforeTurningOff($now) {
-		$isLate = $this->checkIfMinutesBeforeTurnOff($now, 20);
+		$isLate = $this->checkIfMinutesBeforeTurnOff($now, 40);
 
 		if ($isLate) {
 			$client = new GoveeClient();

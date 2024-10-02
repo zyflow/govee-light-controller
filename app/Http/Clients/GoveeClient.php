@@ -4,14 +4,14 @@ namespace App\Http\Clients;
 
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class GoveeClient
 {
 	private $client;
 	private $headers;
-
-
 	private $goveeUrl;
+	private $body;
 
 	public function __construct()
 	{
@@ -36,39 +36,29 @@ class GoveeClient
 		];
 	}
 
-	public function index($switch = 'off')
+	public function baseUrl() {
+		return 'https://developer-api.govee.com/v1/';
+	}
+	public function url($path = null) {
+		if (!$path) {
+			$path = "devices/control?Govee-API-Key=' ". env('GOVEE_API_KEY');
+		}
+
+		return $this->baseUrl() . $path;
+	}
+	public function index( $switch = 'off')
 	{
-		$curl = curl_init();
-		curl_setopt_array($curl, [
-			CURLOPT_URL => 'https://developer-api.govee.com/v1/devices/control?Govee-API-Key=' . env('GOVEE_API_KEY'),
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => '',
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => 'PUT',
-			CURLOPT_POSTFIELDS => '{
-            "device": "' . env("GOVEE_DEVICE") . '",
-            "model": "' . env("GOVEE_DEVICE_MODEL") . '",
-            "cmd": {
-                "name": "turn",
-                "value": "' . $switch . '",
-                "brightness": 1
-            }
-        }',
-			CURLOPT_HTTPHEADER => [
-				'Govee-API-Key: ' . env('GOVEE_API_KEY'),
-				'Content-Type: application/json'
-			],
+		$response = Http::withHeaders($this->headers)->put(url: $this->url(), data: [
+			"device" =>  env("GOVEE_DEVICE"),
+            "model" => env("GOVEE_DEVICE_MODEL"),
+            "cmd" => [
+				 "name" => "turn",
+                "value" => $switch,
+                "brightness" => 1
+			]
 		]);
 
-		$response = curl_exec($curl);
-
-		\Log::info(['logg' => $response]);
-		curl_close($curl);
-
-		return $response;
+		return $response->json();
 	}
 
 	public function flashTurnOn()
@@ -80,7 +70,7 @@ class GoveeClient
 			"b" => 250
 		];
 
-		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
+		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->url(), $this->headers, json_encode($this->body));
 		$res = $this->client->sendAsync($request)->wait();
 
 		return $res->getBody();
@@ -95,10 +85,8 @@ class GoveeClient
 			"b" => 0
 		];
 
-		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
-		$res = $this->client->sendAsync($request)->wait();
-
-		return $res->getBody();
+		$request = Http::withHeaders($this->headers)->put($this->goveeUrl, $this->body);
+		return $request->json();
 	}
 
 
@@ -111,10 +99,11 @@ class GoveeClient
 			"b" => 0
 		];
 
-		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
-		$res = $this->client->sendAsync($request)->wait();
+		$request = Http::withHeaders($this->headers)->put($this->goveeUrl, $this->body);
+//		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->url(), $this->headers, json_encode($this->body));
+//		$res = $this->client->sendAsync($request)->wait();
 
-		return $res->getBody();
+		return $request->json();
 	}
 
 	public function getState()
@@ -155,10 +144,8 @@ class GoveeClient
 	{
 		$this->body['cmd']['name'] = "brightness";
 		$this->body['cmd']['value'] = $brightness;
+		$request = Http::withHeaders($this->headers)->put($this->goveeUrl, $this->body);
 
-		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->goveeUrl, $this->headers, json_encode($this->body));
-		$res = $this->client->sendAsync($request)->wait();
-
-		return $res->getBody();
+		return $request->json();
 	}
 }

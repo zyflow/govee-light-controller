@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Sunsets extends Migration
+class SunsetDB extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,10 @@ class Sunsets extends Migration
      */
     public function up()
     {
-        Schema::create('Sunsets', function (Blueprint $table) {
+        Schema::create('sunsets', function (Blueprint $table) {
             $table->id();
-            $table->string('sunset_at');
+			$table->string('sunset_at')->nullable();
+			$table->string('executed')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ class Sunsets extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Sunsets');
+        Schema::dropIfExists('sunsets');
     }
 }

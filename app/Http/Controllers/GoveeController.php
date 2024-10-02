@@ -11,8 +11,6 @@ use Illuminate\Http\Request;
 
 class GoveeController extends Controller
 {
-    private $body;
-
     public function index(Request $request, $turn = 'off') {
 		$switch = $turn;
         if ($request->get('turn')) {
@@ -20,9 +18,9 @@ class GoveeController extends Controller
         }
 
        $client = new GoveeClient();
-	   $client->index($switch);
+	   $clientResponse = $client->index($switch);
 
-        return ['status' => 'done'];
+        return ['status' => 'done', 'clientResponse' => $clientResponse];
     }
 
     public function turnOff(Request $request) {
@@ -32,12 +30,10 @@ class GoveeController extends Controller
     }
 
     public function checkLights() : array {
-
-		$client = new GoveeClient();
 		$govee = new Govee();
-		$govee->controlSunset($client);
+		$status = $govee->controlSunset();
 
-        return ['status' => 'done'];
+        return $status;
     }
 
     public function setSunetTime() {
@@ -61,11 +57,10 @@ class GoveeController extends Controller
 
         $data = json_decode($response);
 
-        $sheet = new SheetController();
         $dateTime = new DateTime($data->results->sunset);
         $time = $dateTime->format("H:i:s");
 
-        $sheet->setTime($time);
+//		Sunset::setTime($time);
 
         return ['status' => 'done'];
     }

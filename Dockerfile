@@ -1,5 +1,5 @@
 FROM php:8.2-apache
-ENV PORT 80
+ENV PORT 82
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -11,15 +11,17 @@ RUN a2enmod headers
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     vim \
-#    default-mysql-client \
+    default-mysql-client \
     zlib1g-dev \
     libzip-dev \
     unzip \
 && rm -rf /var/lib/apt/lists/* \
 
-
-RUN pecl install excimer
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-install pdo
+RUN docker-php-ext-install pdo_mysql
 RUN docker-php-ext-install zip
+RUN pecl install excimer
 
 WORKDIR /var/www/html/
 

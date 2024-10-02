@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Http\Clients\GoveeClient;
-use App\Http\Controllers\SheetController;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,21 +12,33 @@ class Govee extends Model
 {
 	use HasFactory;
 
-	public static $offtime = "23:50";
-	public function controlSunset($client)
+	public $client;
+	public function __construct(array $attributes = [])
 	{
-		$sheet = new SheetController();
-		$sunsetAt = $sheet->getSunset();
-		$completed = $sheet->getExecuted();
+		parent::__construct($attributes);
+		$this->client = new GoveeClient();
+	}
 
-		$isTurnOn = $this->turnOnForSunset($completed, $sheet, $sunsetAt, Carbon::now());
-		if ($isTurnOn) {
-			$sheet->setExecuted();
+	public static $offtime = "23:30";
+	public function controlSunset()
+	{
+		$status = 'turning_off';
+		$sunsetAt = Sunset::getSunset();
+		$completed = Sunset::getExecuted();
+
+		$responseObj = $this->turnOnForSunset($completed, $sunsetAt, $this->client, Carbon::now());
+		if ($responseObj['state']) {
+			Sunset::setExecuted();
+			$status = 'turning_on';
 		}
 
-		$this->turnRedBeforeTurningOff(Carbon::now(), $sunsetAt);
-		$this->turnOffLights();
-		$this->turnOnPreSunSet(Carbon::now(), $sunsetAt);
+		$responseObj['on_status'] = $status;
+
+//		$responseObj = $this->turnRedBeforeTurningOff(Carbon::now(), self::$offtime);
+		$this->turnOffLights(Carbon::now());
+//		$this->turnOnPreSunSet(Carbon::now(), $sunsetAt);
+
+		return $responseObj;
 	}
 
 	public function turnOnPreSunSet($now, $sunsetAt) {
@@ -41,8 +52,8 @@ class Govee extends Model
 		}
 	}
 
-	public function turnRedBeforeTurningOff($now) {
-		$isLate = $this->checkIfMinutesBeforeTurnOff($now, 40);
+	public function turnRedBeforeTurningOff($now, $offTime) {
+		$isLate = $this->checkIfMinutesBeforeTurnOff($now, 60);
 
 		if ($isLate) {
 			$client = new GoveeClient();
@@ -102,21 +113,28 @@ class Govee extends Model
 	}
 
 	public function turnOnForSunset($completed, $sunsetAt, GoveeClient $client, $currentTimeObj) {
+		$state = null;
 		if ($completed) {
-			return false;
+			return [
+				'state' => false,
+			];
 		}
-		$state = false;
-		$request = new Request();
+
 		$isSunsetTime = $this->isSunsetTime($currentTimeObj, $sunsetAt);
 
 		if ($isSunsetTime) {
 			$state = true;
-			$client->index($request, 'on');
-			$client->setBrightness(40);
-			$client->colorOrange();
+			$switchingOn = $client->index('on');
+			$settingBrightness = $client->setBrightness(40);
+			$settingColorOrange = $client->colorOrange();
 		}
 
-		return $state;
+		return [
+			'state' => $state,
+			'switchedOn' => $switchingOn,
+			'settingBrightness' => $settingBrightness,
+			'settingColorOrange' => $settingColorOrange
+		];
 	}
 
 	public function isSunsetTime($now, $sunsetAt) {

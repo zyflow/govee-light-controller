@@ -40,7 +40,6 @@ class CheckTime extends Command
     {
         $govee = new GoveeController();
         $govee->checkLights();
-        \Log::info('Govee lights checking');
         return 0;
     }
 }

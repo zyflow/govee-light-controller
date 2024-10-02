@@ -10,7 +10,7 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
-	protected function fakeResponse($url = null) {
+//	protected function fakeResponse($url = null) {
 //        $purchaseOrderId = Arr::get($responseData, "purchaseOrderInfo.purchaseOrderId", null);
 //        Http::fake([
 //            $this->client->url("/purchaseOrders") => function($request) use($purchaseOrderId) {
@@ -27,5 +27,5 @@ abstract class TestCase extends BaseTestCase
 //            },
 //            "*" => Http::response([])
 //        ]);
-    }
+//    }
 }

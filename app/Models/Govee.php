@@ -23,7 +23,7 @@ class Govee extends Model
 		$this->client = new GoveeClient();
 	}
 
-	public static $offtime = "23:30";
+	public static $offtime = "23:50";
 
 	public function controlSunset()
 	{
@@ -40,6 +40,7 @@ class Govee extends Model
 		}
 
 		$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
+		$this->turnOrangeAt22($now);
 		$this->turnOrangeBeforeTurningOff($now);
 		$this->turnRedBeforeTurningOff($now, self::$offtime);
 
@@ -50,23 +51,25 @@ class Govee extends Model
 		];
 	}
 
-	public function turnOnPreSunSet($now, $sunsetAt)
-	{
-		$isPreSunSet = $now->format('H:i:s') > Carbon::parse($sunsetAt)->subMinutes(50)->format('H:i:s');
+	public function turnOrangeAt22($now) {
+		$timeIsReady = $this->checkIfTimeIsToAct($now, 21, 0);
 
-		if ($isPreSunSet) {
-			$govee = new GoveeClient();
-			$govee->index('on');
-			$govee->flashTurnOn();
-			$govee->setBrightness(100);
+		if ($timeIsReady && $this->mode == 'on') {
+			$this->brightness = 70;
+			$this->mode = 'orange_21';
+			$this->color = 'orange';
+
+			$client = new GoveeClient();
+			$client->setColor($this->color);
+			$client->setBrightness($this->brightness);
 		}
 	}
 
 	public function turnOrangeBeforeTurningOff($now)
 	{
-		$isLate = $this->checkIfMinutesBeforeTurnOff($now, 120);
+		$timeIsReady = $this->checkIfTimeIsToAct($now, 22, 00);
 
-		if ($isLate && $this->mode == 'on') {
+		if ($timeIsReady && $this->mode == 'orange_21') {
 			$this->brightness = 40;
 			$this->mode = 'orange';
 			$this->color = 'orange';
@@ -123,6 +126,17 @@ class Govee extends Model
 		return false;
 	}
 
+	public function checkIfTimeIsToAct($now, $timeWhenToActHours, $timeToActMinutes)
+	{
+		$compareToTime = $now->copy();
+		$compareToTime = $compareToTime->setTime($timeWhenToActHours, $timeToActMinutes);
+
+		if ($now->gt($compareToTime)) {
+			return true;
+		}
+
+		return false;
+	}
 	public function checkIfLate(Carbon $now)
 	{
 		$switchOffTime = "23:50";

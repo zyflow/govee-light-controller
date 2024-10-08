@@ -110,9 +110,21 @@ class EndToEndTest extends TestCase
 		$this->assertEquals('off', $response['mode']);
 	}
 
+	public function test_lights_get_orange_at_21() {
+		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
+		$this->travelTo(Carbon::parse("2024-01-01 21:01:00"));
+		$response = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals( 'orange_21', $response['mode']);
+		$this->assertEquals("70", $response['brightness']);
+		$this->assertEquals("orange", $response['color']);
+	}
+
 	public function test_light_gets_orange_before_off() {
 		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
-		$this->travelTo(Carbon::parse("2024-01-01 22:31:00"));
+		$this->travelTo(Carbon::parse("2024-01-01 22:50:00"));
 		$response = $this->makeRequest()
 			->assertSuccessful()
 			->json();

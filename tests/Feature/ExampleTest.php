@@ -62,12 +62,5 @@ class ExampleTest extends TestCase
 		$this->assertEquals(false, $state );
     }
 
-//	public function test_pre_sunset() {
-//		$govee = new Govee();
-//
-//		$currentTimeObj = Carbon::parse('2024-01-07 15:31:00');
-//		$sunsetAt = Carbon::parse('2024-01-07 16:00:00');
-//		$state = $govee->turnOnPreSunSet($currentTimeObj, $sunsetAt);
-//		$this->assertEquals(false, $state );
-//	}
+
 }

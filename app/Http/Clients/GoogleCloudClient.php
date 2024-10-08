@@ -4,6 +4,7 @@ namespace App\Http\Clients;
 
 use Google_Client;
 use Google_Service_Sheets;
+use Illuminate\Support\Facades\Session;
 
 class GoogleCloudClient
 {
@@ -68,4 +69,28 @@ class GoogleCloudClient
 		$this->service->spreadsheets_values->update($this->spreadSheetId, $range, $body, $params);
 	}
 
+	public function setMode($value) {
+		if (env('APP_ENV') == 'testing') {
+			Session::put("mode", $value);
+			return ;
+		}
+		$values = [[$value] ];
+		$body = new \Google_Service_Sheets_ValueRange([ 'values' => $values  ]);
+		$range = "sunsets!C2:C2";
+		$params = [ 'valueInputOption' => 'RAW'];
+
+		$this->service->spreadsheets_values->update($this->spreadSheetId, $range, $body, $params);
+	}
+
+	public function getMode() {
+		if (env('APP_ENV') == 'testing') {
+			return Session::get("mode");
+		}
+		$range = "sunsets!C2:C2";
+		$response = $this->service->spreadsheets_values->get($this->spreadSheetId, $range);
+		$values = $response->getValues();
+
+		$sunsetAt = $values[0][0];
+
+		return $sunsetAt;}
 }

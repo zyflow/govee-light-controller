@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Clients\GoogleCloudClient;
 use App\Http\Clients\GoveeClient;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,11 +17,13 @@ class Govee extends Model
 	private $color;
 	private $brightness;
 	private $mode = 'on';
+	private $googleClient;
 
 	public function __construct(array $attributes = [])
 	{
 		parent::__construct($attributes);
 		$this->client = new GoveeClient();
+		$this->googleClient = new GoogleCloudClient();
 	}
 
 	public static $offtime = "23:50";
@@ -39,60 +42,84 @@ class Govee extends Model
 			];
 		}
 
-		$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
-		$this->turnOrangeAt22($now);
-		$this->turnOrangeBeforeTurningOff($now);
-		$this->turnRedBeforeTurningOff($now, self::$offtime);
+		$now = Carbon::now();
+		$sunsetArr = explode(':', $sunsetAt);
+		$sunset = Carbon::createFromTime($sunsetArr[0], $sunsetArr[1]);
+
+		switch ($now) {
+			case $now->between($sunset, Carbon::createFromTime(21, 00)):
+				$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
+				break;
+			case $now->between(Carbon::createFromTime(21, 00), Carbon::createFromTime(22, 00)):
+				$this->turnOrangeAt22($now);
+				break;
+			case $now->between(Carbon::createFromTime(22, 00), Carbon::createFromTime(23, 00)):
+				$this->turnOrangeBeforeTurningOff($now);
+				break;
+			case $now->between(Carbon::createFromTime(23, 00), Carbon::createFromTime(23, 30)):
+				$this->turnRedBeforeTurningOff($now);
+				break;
+			case $now->isAfter(Carbon::createFromTime(23, 50));
+				$this->turnOffLights($now);
+				break;
+		}
 
 		return [
 			'brightness' => $this->brightness,
 			'color' => $this->color,
-			'mode' => $this->mode,
+			'mode' => $this->googleClient->getMode()
 		];
 	}
 
-	public function turnOrangeAt22($now) {
-		$timeIsReady = $this->checkIfTimeIsToAct($now, 21, 0);
+	public function turnOrangeAt22($now)
+	{
+//		dump('setting', $this->mode, $this->googleClient->getMode());
 
-		if ($timeIsReady && $this->mode == 'on') {
-			$this->brightness = 70;
-			$this->mode = 'orange_21';
-			$this->color = 'orange';
-
-			$client = new GoveeClient();
-			$client->setColor($this->color);
-			$client->setBrightness($this->brightness);
+		if ($this->googleClient->getMode() === 'orange_21') {
+			return;
 		}
+		$this->brightness = 70;
+		$this->mode = 'orange_21';
+		$this->color = 'orange';
+
+		$client = new GoveeClient();
+		$client->setColor($this->color);
+		$client->setBrightness($this->brightness);
+
+		$this->googleClient->setMode($this->mode);
 	}
 
 	public function turnOrangeBeforeTurningOff($now)
 	{
-		$timeIsReady = $this->checkIfTimeIsToAct($now, 22, 00);
-
-		if ($timeIsReady && $this->mode == 'orange_21') {
-			$this->brightness = 40;
-			$this->mode = 'orange';
-			$this->color = 'orange';
-
-			$client = new GoveeClient();
-			$client->setColor($this->color);
-			$client->setBrightness($this->brightness);
+		if ($this->googleClient->getMode() === 'orange') {
+			return;
 		}
+
+		$this->brightness = 40;
+		$this->mode = 'orange';
+		$this->color = 'orange';
+
+		$client = new GoveeClient();
+		$client->setColor($this->color);
+		$client->setBrightness($this->brightness);
+
+		$this->googleClient->setMode($this->mode);
 	}
 
-	public function turnRedBeforeTurningOff($now, $offTime)
+	public function turnRedBeforeTurningOff($now)
 	{
-		$isLate = $this->checkIfMinutesBeforeTurnOff($now, 60);
-
-		if ($isLate && $this->mode == 'orange') {
-			$this->brightness = 20;
-			$this->color = 'red';
-			$this->mode = 'red';
-
-			$client = new GoveeClient();
-			$client->setColor($this->color);
-			$client->setBrightness($this->brightness);
+		if ($this->googleClient->getMode() === 'red') {
+			return;
 		}
+
+		$this->brightness = 20;
+		$this->color = 'red';
+		$this->mode = 'red';
+
+		$client = new GoveeClient();
+		$client->setColor($this->color);
+		$client->setBrightness($this->brightness);
+		$this->googleClient->setMode($this->mode);
 	}
 
 	public function turnOffLights($now)
@@ -137,6 +164,7 @@ class Govee extends Model
 
 		return false;
 	}
+
 	public function checkIfLate(Carbon $now)
 	{
 		$switchOffTime = "23:50";
@@ -160,7 +188,7 @@ class Govee extends Model
 
 	public function turnOnForSunset($completed, $sunsetAt, GoveeClient $client, $currentTimeObj): void
 	{
-		if ($completed) {
+		if ($completed && $this->googleClient->getMode() === 'on') {
 			return;
 		}
 
@@ -175,6 +203,7 @@ class Govee extends Model
 			$client->setBrightness($this->brightness);
 			$client->setColor($this->color);
 			Sunset::setExecuted();
+			$this->googleClient->setMode($this->mode);
 		}
 	}
 

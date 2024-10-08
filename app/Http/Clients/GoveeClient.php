@@ -65,21 +65,6 @@ class GoveeClient
 		return $response->json();
 	}
 
-	public function flashTurnOn()
-	{
-		$this->body['cmd']['name'] = "color";
-		$this->body['cmd']['value'] = [
-			"r" => 250,
-			"g" => 250,
-			"b" => 250
-		];
-
-		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->url(), $this->headers, json_encode($this->body));
-		$res = $this->client->sendAsync($request)->wait();
-
-		return $res->getBody();
-	}
-
 	public function setColor($color)
 	{
 		if ($color == 'red') {

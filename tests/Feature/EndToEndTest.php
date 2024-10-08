@@ -98,6 +98,27 @@ class EndToEndTest extends TestCase
 		$this->assertEquals('white', $response['color']);
 	}
 
+	public function test_lights_turn_on_twice(): void
+	{
+		$this->travelTo(Carbon::parse("2024-01-01 20:01:00"));
+		$this->assertEquals($this->sunsetAt, $this->sunsetModel->sunset_at);
+
+		$response = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals('on', $response['mode']);
+		$this->assertEquals('100', $response['brightness']);
+		$this->assertEquals('white', $response['color']);
+
+		$response2 = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals('on', $response2['mode']);
+		$this->assertEquals(null, $response2['brightness']);
+		$this->assertEquals(null, $response2['color']);
+	}
 	public function test_lights_turn_off(): void
 	{
 		$this->travelTo(Carbon::parse("2024-01-01 23:55:00"));
@@ -122,9 +143,30 @@ class EndToEndTest extends TestCase
 		$this->assertEquals("orange", $response['color']);
 	}
 
+	public function test_lights_get_orange_at_21_twice() {
+		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
+		$this->travelTo(Carbon::parse("2024-01-01 21:01:00"));
+		$response = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals( 'orange_21', $response['mode']);
+		$this->assertEquals("70", $response['brightness']);
+		$this->assertEquals("orange", $response['color']);
+
+
+		$response2 = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals( 'orange_21', $response2['mode']);
+		$this->assertEquals(null, $response2['brightness']);
+		$this->assertEquals(null, $response2['color']);
+	}
 	public function test_light_gets_orange_before_off() {
 		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
-		$this->travelTo(Carbon::parse("2024-01-01 22:50:00"));
+
+		$this->travelTo(Carbon::parse("2024-01-01 22:01:00"));
 		$response = $this->makeRequest()
 			->assertSuccessful()
 			->json();
@@ -134,9 +176,31 @@ class EndToEndTest extends TestCase
 		$this->assertEquals("orange", $response['color']);
 	}
 
+
+	public function test_light_gets_orange_before_off_twice() {
+		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
+
+		$this->travelTo(Carbon::parse("2024-01-01 22:01:00"));
+		$response = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals('orange', $response['mode']);
+		$this->assertEquals("40", $response['brightness']);
+		$this->assertEquals("orange", $response['color']);
+
+		$response2 = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals('orange', $response2['mode']);
+		$this->assertEquals(null, $response2['brightness']);
+		$this->assertEquals(null, $response2['color']);
+	}
+
 	public function test_light_gets_red_before_turning_off() {
 		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
-		$this->travelTo(Carbon::parse("2024-01-01 23:10:00"));
+		$this->travelTo(Carbon::parse("2024-01-01 23:01:00"));
 		$response = $this->makeRequest()
 			->assertSuccessful()
 			->json();

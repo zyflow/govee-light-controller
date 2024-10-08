@@ -86,29 +86,28 @@ class EndToEndTest extends TestCase
 
 	public function test_lights_turn_on(): void
 	{
+		$this->travelTo(Carbon::parse("2024-01-01 20:01:00"));
 		$this->assertEquals($this->sunsetAt, $this->sunsetModel->sunset_at);
 
 		$response = $this->makeRequest()
 			->assertSuccessful()
 			->json();
 
-		$this->assertEquals('turning_on', $response['state']);
-		$this->assertEquals('Success', $response['switchedOn']['message']);
-		$this->assertEquals('Success', $response['settingBrightness']['message']);
-		$this->assertEquals('Success', $response['settingColorOrange']['message']);
-		$this->assertEquals('turning_on', $response['on_status']);
+		$this->assertEquals('on', $response['mode']);
+		$this->assertEquals('100', $response['brightness']);
+		$this->assertEquals('white', $response['color']);
 	}
 
 	public function test_lights_turn_off(): void
 	{
-		$this->travelTo(Carbon::parse("2024-01-01 23:31:00"));
+		$this->travelTo(Carbon::parse("2024-01-01 23:55:00"));
 
 		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
 		$response = $this->makeRequest()
 			->assertSuccessful()
 			->json();
 
-		$this->assertEquals('turning_off', $response['on_status']);
+		$this->assertEquals('off', $response['mode']);
 	}
 
 	public function test_light_gets_orange_before_off() {
@@ -118,6 +117,20 @@ class EndToEndTest extends TestCase
 			->assertSuccessful()
 			->json();
 
-		$this->assertEquals('turning_off', $response['on_status']);
+		$this->assertEquals('orange', $response['mode']);
+		$this->assertEquals("40", $response['brightness']);
+		$this->assertEquals("orange", $response['color']);
+	}
+
+	public function test_light_gets_red_before_turning_off() {
+		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
+		$this->travelTo(Carbon::parse("2024-01-01 23:10:00"));
+		$response = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals( 'red', $response['mode']);
+		$this->assertEquals("20", $response['brightness']);
+		$this->assertEquals("red", $response['color']);
 	}
 }

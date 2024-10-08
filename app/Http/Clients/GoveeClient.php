@@ -36,25 +36,29 @@ class GoveeClient
 		];
 	}
 
-	public function baseUrl() {
+	public function baseUrl()
+	{
 		return 'https://developer-api.govee.com/v1/';
 	}
-	public function url($path = null) {
+
+	public function url($path = null)
+	{
 		if (!$path) {
-			$path = "devices/control?Govee-API-Key=' ". env('GOVEE_API_KEY');
+			$path = "devices/control?Govee-API-Key=' " . env('GOVEE_API_KEY');
 		}
 
 		return $this->baseUrl() . $path;
 	}
-	public function index( $switch = 'off')
+
+	public function index($switch = 'off')
 	{
 		$response = Http::withHeaders($this->headers)->put(url: $this->url(), data: [
-			"device" =>  env("GOVEE_DEVICE"),
-            "model" => env("GOVEE_DEVICE_MODEL"),
-            "cmd" => [
-				 "name" => "turn",
-                "value" => $switch,
-                "brightness" => 1
+			"device" => env("GOVEE_DEVICE"),
+			"model" => env("GOVEE_DEVICE_MODEL"),
+			"cmd" => [
+				"name" => "turn",
+				"value" => $switch,
+				"brightness" => 1
 			]
 		]);
 
@@ -76,33 +80,36 @@ class GoveeClient
 		return $res->getBody();
 	}
 
-	public function colorOrange()
+	public function setColor($color)
 	{
-		$this->body['cmd']['name'] = "color";
-		$this->body['cmd']['value'] = [
-			"r" => 250,
-			"g" => 100,
-			"b" => 0
-		];
+		if ($color == 'red') {
+			$this->body['cmd']['name'] = "color";
+			$this->body['cmd']['value'] = [
+				"r" => 250,
+				"g" => 0,
+				"b" => 0
+			];
+		}
+
+		if ($color == 'orange') {
+			$this->body['cmd']['name'] = "color";
+			$this->body['cmd']['value'] = [
+				"r" => 250,
+				"g" => 100,
+				"b" => 0
+			];
+		}
+
+		if ($color == 'white') {
+			$this->body['cmd']['name'] = "color";
+			$this->body['cmd']['value'] = [
+				"r" => 255,
+				"g" => 255,
+				"b" => 255
+			];
+		}
 
 		$request = Http::withHeaders($this->headers)->put($this->goveeUrl, $this->body);
-		return $request->json();
-	}
-
-
-	public function colorRed()
-	{
-		$this->body['cmd']['name'] = "color";
-		$this->body['cmd']['value'] = [
-			"r" => 250,
-			"g" => 0,
-			"b" => 0
-		];
-
-		$request = Http::withHeaders($this->headers)->put($this->goveeUrl, $this->body);
-//		$request = new \GuzzleHttp\Psr7\Request('PUT', $this->url(), $this->headers, json_encode($this->body));
-//		$res = $this->client->sendAsync($request)->wait();
-
 		return $request->json();
 	}
 

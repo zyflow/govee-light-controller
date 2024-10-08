@@ -26,7 +26,7 @@ RUN pecl install excimer
 WORKDIR /var/www/html/
 
 COPY composer.json composer.lock ./
-COPY .env.example .env ./
+COPY .env.example .env
 COPY . .
 
 RUN composer install

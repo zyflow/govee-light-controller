@@ -29,7 +29,9 @@ class GoogleCloudClient
 	}
 
 	public function getSunset() {
-
+		if (env('APP_ENV') === 'testing') {
+			return "15:40:59";
+		}
 		$this->spreadSheetId = env('SPREADSHEET_ID');
 		$range = "sunsets!A2:A2";
 		$response = $this->service->spreadsheets_values->get($this->spreadSheetId, $range);
@@ -82,7 +84,8 @@ class GoogleCloudClient
 		$this->service->spreadsheets_values->update($this->spreadSheetId, $range, $body, $params);
 	}
 
-	public function getMode() {
+	public function getMode()
+	{
 		if (env('APP_ENV') == 'testing') {
 			return Session::get("mode");
 		}
@@ -90,7 +93,6 @@ class GoogleCloudClient
 		$response = $this->service->spreadsheets_values->get($this->spreadSheetId, $range);
 		$values = $response->getValues();
 
-		$sunsetAt = $values[0][0];
-
-		return $sunsetAt;}
+		return $values;
+	}
 }

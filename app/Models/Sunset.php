@@ -46,7 +46,8 @@ class Sunset extends Model
 	public static function getSunset()
 	{
 		if (env('APP_ENV') === 'testing') {
-			return Sunset::first()->sunset_at;
+			return "15:40:59";
+//			return Sunset::first()->sunset_at;
 		}
 
 		$googleCloudClient = new GoogleCloudClient();

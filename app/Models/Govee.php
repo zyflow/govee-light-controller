@@ -42,7 +42,6 @@ class Govee extends Model
 			];
 		}
 
-		$now = Carbon::now();
 		$sunsetArr = explode(':', $sunsetAt);
 		$sunset = Carbon::createFromTime($sunsetArr[0], $sunsetArr[1]);
 

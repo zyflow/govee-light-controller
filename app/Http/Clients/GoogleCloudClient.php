@@ -93,6 +93,6 @@ class GoogleCloudClient
 		$response = $this->service->spreadsheets_values->get($this->spreadSheetId, $range);
 		$values = $response->getValues();
 
-		return $values;
+		return $values[0][0];;
 	}
 }

@@ -167,17 +167,22 @@ class Govee extends Model
 	public function checkIfLate(Carbon $now)
 	{
 		$switchOffTime = "23:50";
-		switch ($now->englishDayOfWeek) {
-			case 'Friday':
-			case 'Saturday':
-				$switchOffTime = "0:30";
-				break;
-		}
-
 		$switchOffTimeArr = explode(':', $switchOffTime);
 		$state = false;
 		$turnOffTime = $now->copy();
 		$turnOffTime->setTime($switchOffTimeArr[0], $switchOffTimeArr[1]);
+		switch ($now->englishDayOfWeek) {
+			case 'Friday':
+			case 'Saturday':
+				$switchOffTime = "0:30";
+				$switchOffTimeArr = explode(':', $switchOffTime);
+				$state = false;
+				$turnOffTime = $now->copy();
+				$turnOffTime->setTime($switchOffTimeArr[0], $switchOffTimeArr[1])->addDay();
+				break;
+		}
+
+
 		if ($now->gt($turnOffTime)) {
 			$state = true;
 		}
@@ -187,6 +192,7 @@ class Govee extends Model
 
 	public function turnOnForSunset($completed, $sunsetAt, GoveeClient $client, $currentTimeObj): void
 	{
+		dump('the mode? ', $this->googleClient->getMode());
 		if ($completed && $this->googleClient->getMode() === 'on') {
 			return;
 		}

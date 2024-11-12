@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Clients\GoveeClient;
 use App\Models\Govee;
 use App\Models\LightActivity;
+use App\Models\Sunset;
 use Carbon\Carbon;
-use DateTime;
 use Illuminate\Http\Request;
 
 class GoveeController extends Controller
@@ -57,10 +57,8 @@ class GoveeController extends Controller
 
         $data = json_decode($response);
 
-        $dateTime = new DateTime($data->results->sunset);
-        $time = $dateTime->format("H:i:s");
-
-//		Sunset::setTime($time);
+        $dateTime = Carbon::parse($data->results->sunset)->setTimezone('Europe/Riga')->format('H:i:s');
+		Sunset::setTime($dateTime);
 
         return ['status' => 'done'];
     }

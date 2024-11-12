@@ -209,4 +209,17 @@ class EndToEndTest extends TestCase
 		$this->assertEquals("20", $response['brightness']);
 		$this->assertEquals("red", $response['color']);
 	}
+
+	public function test_lights_not_switching_on_weekend() {
+		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
+
+		$this->travelTo(Carbon::parse("2024-01-06 23:01:00")); // saturtday
+		$response = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals( 'orange', $response['mode']);
+		$this->assertEquals("40", $response['brightness']);
+		$this->assertEquals("orange", $response['color']);
+	}
 }

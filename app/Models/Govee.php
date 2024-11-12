@@ -44,18 +44,18 @@ class Govee extends Model
 
 		$sunsetArr = explode(':', $sunsetAt);
 		$sunset = Carbon::createFromTime($sunsetArr[0], $sunsetArr[1]);
-
+		$isWeekend = $now->isWeekend();
 		switch ($now) {
-			case $now->between($sunset, Carbon::createFromTime(21, 00)):
+			case $now->between($sunset, Carbon::createFromTime(21, 00)) && !$isWeekend:
 				$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
 				break;
-			case $now->between(Carbon::createFromTime(21, 00), Carbon::createFromTime(22, 00)):
+			case $now->between(Carbon::createFromTime(21, 00), Carbon::createFromTime(22, 00))  && !$isWeekend:
 				$this->turnOrangeAt22($now);
 				break;
-			case $now->between(Carbon::createFromTime(22, 00), Carbon::createFromTime(23, 00)):
+			case $now->between(Carbon::createFromTime(22, 00), Carbon::createFromTime(23, 00))  && !$isWeekend:
 				$this->turnOrangeBeforeTurningOff($now);
 				break;
-			case $now->between(Carbon::createFromTime(23, 00), Carbon::createFromTime(23, 30)):
+			case $now->between(Carbon::createFromTime(23, 00), Carbon::createFromTime(23, 30)) && !$isWeekend:
 				$this->turnRedBeforeTurningOff($now);
 				break;
 			case $now->isAfter(Carbon::createFromTime(23, 50));

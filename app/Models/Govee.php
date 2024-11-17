@@ -46,7 +46,7 @@ class Govee extends Model
 		$sunset = Carbon::createFromTime($sunsetArr[0], $sunsetArr[1]);
 		$isWeekend = $now->isWeekend();
 		switch ($now) {
-			case $now->between($sunset, Carbon::createFromTime(21, 00)) && !$isWeekend:
+			case $now->between($sunset, Carbon::createFromTime(21, 00)) :
 				$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
 				break;
 			case $now->between(Carbon::createFromTime(21, 00), Carbon::createFromTime(22, 00))  && !$isWeekend:
@@ -123,6 +123,7 @@ class Govee extends Model
 
 	public function turnOffLights($now)
 	{
+		// Friday evening,
 		$isLate = $this->checkIfLate($now);
 
 		if ($isLate) {
@@ -171,14 +172,24 @@ class Govee extends Model
 		$state = false;
 		$turnOffTime = $now->copy();
 		$turnOffTime->setTime($switchOffTimeArr[0], $switchOffTimeArr[1]);
+
+		// If it is night and still in mode red, turn off (bypass by changing to different mode)
+		if (!$now->hour > 1 && $now->hour < 14 ) {
+			return true;
+		}
+
+		if (!$now->isWeekend() && $now->hour >= 0 && $now->hour < 14) {
+			return true;
+		}
+
 		switch ($now->englishDayOfWeek) {
-			case 'Friday':
 			case 'Saturday':
+//			case 'Sunday':
 				$switchOffTime = "0:30";
 				$switchOffTimeArr = explode(':', $switchOffTime);
 				$state = false;
 				$turnOffTime = $now->copy();
-				$turnOffTime->setTime($switchOffTimeArr[0], $switchOffTimeArr[1])->addDay();
+				$turnOffTime->setTime($switchOffTimeArr[0], $switchOffTimeArr[1]);
 				break;
 		}
 
@@ -192,7 +203,6 @@ class Govee extends Model
 
 	public function turnOnForSunset($completed, $sunsetAt, GoveeClient $client, $currentTimeObj): void
 	{
-		dump('the mode? ', $this->googleClient->getMode());
 		if ($completed && $this->googleClient->getMode() === 'on') {
 			return;
 		}

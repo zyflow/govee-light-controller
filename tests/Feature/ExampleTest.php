@@ -43,12 +43,16 @@ class ExampleTest extends TestCase
 
 		$currentTimeObj = Carbon::parse('2024-01-05 00:05:00');
 		$state = $govee->checkIfLate($currentTimeObj);
-		$this->assertEquals(false, $state );
+		$this->assertEquals(true, $state );
 
-		$currentTimeObj = Carbon::parse('2024-01-05 00:31:00');
+		$currentTimeObj = Carbon::parse('2024-01-05 00:01:00'); // Friday
 		$state = $govee->checkIfLate($currentTimeObj);
 		$this->assertEquals(true, $state );
 
+		$currentTimeObj = Carbon::parse('2024-01-05 00:31:00'); // Friday
+		$state = $govee->checkIfLate($currentTimeObj);
+		$this->assertEquals(true, $state );
+//
 		$currentTimeObj = Carbon::parse('2024-01-06 00:31:00');
 		$state = $govee->checkIfLate($currentTimeObj);
 		$this->assertEquals(true, $state );

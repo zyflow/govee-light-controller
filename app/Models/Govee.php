@@ -36,6 +36,7 @@ class Govee extends Model
 		$now = Carbon::now();
 
 		$this->turnOffLights($now);
+
 		if ($this->mode === 'off') {
 			return [
 				'mode' => 'off'
@@ -44,19 +45,23 @@ class Govee extends Model
 
 		$sunsetArr = explode(':', $sunsetAt);
 		$sunset = Carbon::createFromTime($sunsetArr[0], $sunsetArr[1]);
-		$isWeekend = $now->isWeekend();
+		$isWeekend = false;
+		if (in_array($now->dayOfWeek, [5,6])) {
+			$isWeekend = true;
+		}
+
 		switch ($now) {
 			case $now->between($sunset, Carbon::createFromTime(21, 00)) :
 				$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
 				break;
-			case $now->between(Carbon::createFromTime(21, 00), Carbon::createFromTime(22, 00))  && !$isWeekend:
-				$this->turnOrangeAt22($now);
+			case $now->between(Carbon::createFromTime(21, 00), Carbon::createFromTime(22, 00))  :
+				$this->turnOrangeAt22($now, $isWeekend);
 				break;
-			case $now->between(Carbon::createFromTime(22, 00), Carbon::createFromTime(23, 00))  && !$isWeekend:
-				$this->turnOrangeBeforeTurningOff($now);
+			case $now->between(Carbon::createFromTime(22, 00), Carbon::createFromTime(23, 00))  :
+				$this->turnOrangeBeforeTurningOff($now, $isWeekend);
 				break;
-			case $now->between(Carbon::createFromTime(23, 00), Carbon::createFromTime(23, 30)) && !$isWeekend:
-				$this->turnRedBeforeTurningOff($now);
+			case $now->between(Carbon::createFromTime(23, 00), Carbon::createFromTime(23, 30)):
+				$this->turnRedBeforeTurningOff($now, $isWeekend);
 				break;
 			case $now->isAfter(Carbon::createFromTime(23, 50));
 				$this->turnOffLights($now);
@@ -70,10 +75,8 @@ class Govee extends Model
 		];
 	}
 
-	public function turnOrangeAt22($now)
+	public function turnOrangeAt22($now, $isWeekend)
 	{
-//		dump('setting', $this->mode, $this->googleClient->getMode());
-
 		if ($this->googleClient->getMode() === 'orange_21') {
 			return;
 		}
@@ -82,13 +85,15 @@ class Govee extends Model
 		$this->color = 'orange';
 
 		$client = new GoveeClient();
-		$client->setColor($this->color);
-		$client->setBrightness($this->brightness);
+		if (!$isWeekend) {
+			$client->setColor($this->color);
+			$client->setBrightness($this->brightness);
+		}
 
 		$this->googleClient->setMode($this->mode);
 	}
 
-	public function turnOrangeBeforeTurningOff($now)
+	public function turnOrangeBeforeTurningOff($now, $isWeekend)
 	{
 		if ($this->googleClient->getMode() === 'orange') {
 			return;
@@ -99,13 +104,16 @@ class Govee extends Model
 		$this->color = 'orange';
 
 		$client = new GoveeClient();
-		$client->setColor($this->color);
-		$client->setBrightness($this->brightness);
+		if (!$isWeekend) {
+			$client->setColor($this->color);
+			$client->setBrightness($this->brightness);
+		}
+
 
 		$this->googleClient->setMode($this->mode);
 	}
 
-	public function turnRedBeforeTurningOff($now)
+	public function turnRedBeforeTurningOff($now, $isWeekend)
 	{
 		if ($this->googleClient->getMode() === 'red') {
 			return;
@@ -116,8 +124,11 @@ class Govee extends Model
 		$this->mode = 'red';
 
 		$client = new GoveeClient();
-		$client->setColor($this->color);
-		$client->setBrightness($this->brightness);
+		if (!$isWeekend) {
+			$client->setColor($this->color);
+			$client->setBrightness($this->brightness);
+		}
+
 		$this->googleClient->setMode($this->mode);
 	}
 
@@ -177,19 +188,22 @@ class Govee extends Model
 		if (!$now->hour > 1 && $now->hour < 14 ) {
 			return true;
 		}
-
-		if (!$now->isWeekend() && $now->hour >= 0 && $now->hour < 14) {
+		if (!$now->isWeekend() && $now->hour >= 1 && $now->hour < 14) {
 			return true;
 		}
 
 		switch ($now->englishDayOfWeek) {
+			case 'Friday':
 			case 'Saturday':
 //			case 'Sunday':
 				$switchOffTime = "0:30";
 				$switchOffTimeArr = explode(':', $switchOffTime);
-				$state = false;
 				$turnOffTime = $now->copy();
 				$turnOffTime->setTime($switchOffTimeArr[0], $switchOffTimeArr[1]);
+				if (($now->hour >= 0 && $now->minute >= 30) && $now->hour <= 14) {
+					return true;
+				}
+				return false;
 				break;
 		}
 

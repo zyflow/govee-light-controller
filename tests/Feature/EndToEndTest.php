@@ -218,8 +218,9 @@ class EndToEndTest extends TestCase
 			->assertSuccessful()
 			->json();
 
-		$this->assertEquals( null, $response['mode']);
-		$this->assertEquals(null, $response['brightness']);
-		$this->assertEquals(null, $response['color']);
+		$this->assertEquals( 'red', $response['mode']);
+		$this->assertEquals(20, $response['brightness']);
+		$this->assertEquals('red', $response['color']);
 	}
+
 }

@@ -95,4 +95,12 @@ class GoogleCloudClient
 
 		return $values[0][0];;
 	}
+
+	public function turnedOnTime() {
+
+	}
+
+	public function setTurnedOnTime() {
+
+	}
 }

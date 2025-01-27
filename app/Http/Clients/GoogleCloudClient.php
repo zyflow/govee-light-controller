@@ -62,6 +62,16 @@ class GoogleCloudClient
 		$this->service->spreadsheets_values->update($this->spreadSheetId, $range, $body, $params);
 	}
 
+	public function setCurrentTime($time) {
+		$values = [[$time]];
+		$body = new \Google_Service_Sheets_ValueRange(['values' => $values ]);
+
+		$range = "sunsets!G2:G2";
+		$params = ['valueInputOption' => 'RAW'];
+
+		$this->service->spreadsheets_values->update($this->spreadSheetId, $range, $body, $params);
+	}
+
 	public function setExecuted($value) {
 		$values = [[$value] ];
 		$body = new \Google_Service_Sheets_ValueRange([ 'values' => $values  ]);

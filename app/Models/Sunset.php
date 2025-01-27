@@ -51,6 +51,7 @@ class Sunset extends Model
 		}
 
 		$googleCloudClient = new GoogleCloudClient();
+		$googleCloudClient->setCurrentTime(Carbon::now()->timezone('Europe/Riga')->format('Y-m-d H:i:s'));
 		return $googleCloudClient->getSunset();
 	}
 

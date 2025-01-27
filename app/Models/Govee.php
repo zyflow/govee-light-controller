@@ -33,7 +33,7 @@ class Govee extends Model
 		$sunsetAt = Sunset::getSunset();
 		$completed = Sunset::getExecuted();
 
-		$now = Carbon::now();
+		$now = Carbon::now()->setTimezone('Europe/Riga');
 
 		$this->turnOffLights($now);
 

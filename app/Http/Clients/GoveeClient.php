@@ -50,11 +50,18 @@ class GoveeClient
 		return $this->baseUrl() . $path;
 	}
 
-	public function index($switch = 'off')
+	public function index($switch = 'off', $device = null)
 	{
+		$targetDevice = env("GOVEE_DEVICE");
+		$targetModel = env("GOVEE_DEVICE_MODEL");
+		if ($device === 'bed') {
+			$targetDevice = env("GOVEE_DEVICE2");
+			$targetModel = env("GOVEE_DEVICE_MODEL2");
+		}
+
 		$response = Http::withHeaders($this->headers)->put(url: $this->url(), data: [
-			"device" => env("GOVEE_DEVICE"),
-			"model" => env("GOVEE_DEVICE_MODEL"),
+			"device" => $targetDevice,
+			"model" => $targetModel,
 			"cmd" => [
 				"name" => "turn",
 				"value" => $switch,
@@ -62,7 +69,7 @@ class GoveeClient
 			]
 		]);
 
-		return $response->json();
+		return ['clientResponse' => $response->json(), 'device' => $targetDevice, 'code' => $response->status()];
 	}
 
 	public function setColor($color)

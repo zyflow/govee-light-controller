@@ -18,9 +18,9 @@ class GoveeController extends Controller
         }
 
        $client = new GoveeClient();
-	   $clientResponse = $client->index($switch);
+	   $clientResponse = $client->index($switch, $request->get('device'));
 
-        return ['status' => 'done', 'clientResponse' => $clientResponse];
+        return ['status' => $switch, 'clientResponse' => $clientResponse];
     }
 
     public function turnOff(Request $request) {

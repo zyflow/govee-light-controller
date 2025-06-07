@@ -13,9 +13,8 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
-google_cred.json
+./google_cred.json
 db
 public/vendor/*
 *.log
 .env.testing
-google_cred.json

@@ -6,6 +6,8 @@ use App\Http\Clients\GoogleCloudClient;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Session;
+
 
 class Sunset extends Model
 {
@@ -46,7 +48,8 @@ class Sunset extends Model
 	public static function getSunset()
 	{
 		if (env('APP_ENV') === 'testing') {
-			return "15:40:59";
+			return Session::get('sunsetAt', '2025-01-07 15:40:59');
+
 //			return Sunset::first()->sunset_at;
 		}
 

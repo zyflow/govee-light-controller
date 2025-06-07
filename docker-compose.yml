@@ -15,14 +15,14 @@ services:
     networks:
       - app-network
     ports:
-        - "82:80"
+        - "86:80"
     volumes:
       - ./test.txt:/var/www/html/
       - ./:/var/www/html
   #MySQL Service
   db:
     image: mysql:5.7.32
-    container_name: govee-db
+    container_name: goveeDB
     restart: unless-stopped
     tty: true
     platform: linux/x86_64

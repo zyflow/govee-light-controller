@@ -2,6 +2,7 @@
 
 namespace App\Http\Clients;
 
+use Carbon\Carbon;
 use Google_Client;
 use Google_Service_Sheets;
 use Illuminate\Support\Facades\Session;
@@ -30,7 +31,7 @@ class GoogleCloudClient
 
 	public function getSunset() {
 		if (env('APP_ENV') === 'testing') {
-			return "15:40:59";
+			return "2025-01-07 15:40:59";
 		}
 		$this->spreadSheetId = env('SPREADSHEET_ID');
 		$range = "sunsets!A2:A2";
@@ -99,18 +100,51 @@ class GoogleCloudClient
 		if (env('APP_ENV') == 'testing') {
 			return Session::get("mode");
 		}
+
 		$range = "sunsets!C2:C2";
+
 		$response = $this->service->spreadsheets_values->get($this->spreadSheetId, $range);
 		$values = $response->getValues();
 
 		return $values[0][0];;
 	}
 
-	public function turnedOnTime() {
+	public function setPhases($now) {
 
+		$dayOfWeek = $now->dayOfWeek;
+
+		$range = "sunsets!C19:E19";
+		$dayPhases = [];
+		$dayPhases[] = $this->createFromTime($now,'21:00');
+		$dayPhases[] = $this->createFromTime($now,'23:00');
+		$dayPhases[] = $this->createFromTime($now,'23:30');
+		$dayPhases = [$dayPhases];
+
+		if (in_array($dayOfWeek, [5,6 ])) {
+			$dayPhases = [];
+			$dayPhases[] = $this->createFromTime($now, '21:00');
+			$dayPhases[] = $this->createFromTime($now, '23:59');
+			$dayPhases[] = $this->createFromTime($now->addDay(), '00:30');
+			$dayPhases = [$dayPhases];
+		}
+
+		if (env('APP_ENV') != 'testing') {
+			$response = $this->service->spreadsheets_values->get($this->spreadSheetId, $range);
+			$dayPhases = $response->getValues();
+		}
+
+		foreach($dayPhases[0] as $key => $dayPhase) {
+			$phaseKey = 'Phase'.$key+1;
+			Session::put($phaseKey, $dayPhase);
+		}
 	}
 
-	public function setTurnedOnTime() {
+	public function createFromTime($now, $time) {
+		$date = $now->createFromFormat('H:i', $time)->setDay($now->day);
+//		if ($date->hour < 5) {
+//			$date->addDay();
+//		}
 
+		return $date;
 	}
 }

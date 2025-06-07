@@ -14,7 +14,6 @@ class govee extends JsonResource
      */
     public function toArray($request)
     {
-        dump('maybe interesting ? ');
         return parent::toArray($request);
     }
 }

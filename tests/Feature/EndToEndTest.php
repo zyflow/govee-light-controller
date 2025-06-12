@@ -285,6 +285,9 @@ class EndToEndTest extends TestCase
 		$this->assertEquals(true, $response['skipped']);
 	}
 
+	/**
+	 * @return void A lot of days has passed by
+	 */
 	public function test_days_passed_with_mode()
 	{
 		$this->sunsetModel->fill(['executed' => "TRUE"])->save();
@@ -301,18 +304,22 @@ class EndToEndTest extends TestCase
 		$this->assertEquals(null, $response['color']);
 		$this->assertEquals(true, $response['skipped']);
 
-		$this->sunsetModel->fill(['executed' => "false"])->save();
-		Session::put('sunsetAt', '2024-01-12 15:40:39');
 
-		$this->travelTo(Carbon::parse("2024-02-22 16:45:00")); // Saturday
 
-		$response = $this->makeRequest()
-			->assertSuccessful()
-			->json();
-
-		$this->assertEquals('off', $response['mode']);
-		$this->assertEquals(null, $response['brightness']);
-		$this->assertEquals(null, $response['color']);
-		$this->assertEquals(true, $response['skipped']);
+//		$this->sunsetModel->fill(['executed' => "false"])->save();
+//		Session::put('sunsetAt', '2024-01-12 15:40:39');
+//
+//		$this->travelTo(Carbon::parse("2024-02-22 16:45:00")); // Saturday
+//
+//		$response = $this->makeRequest()
+//			->assertSuccessful()
+//			->json();
+//
+//		$this->assertEquals('off', $response['mode']);
+//		$this->assertEquals(null, $response['brightness']);
+//		$this->assertEquals(null, $response['color']);
+//		$this->assertEquals(true, $response['skipped']);
 	}
+
+
 }

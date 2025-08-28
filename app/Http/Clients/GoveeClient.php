@@ -54,6 +54,7 @@ class GoveeClient
 	{
 		$targetDevice = env("GOVEE_DEVICE");
 		$targetModel = env("GOVEE_DEVICE_MODEL");
+
 		if ($device === 'bed') {
 			$targetDevice = env("GOVEE_DEVICE2");
 			$targetModel = env("GOVEE_DEVICE_MODEL2");
@@ -98,6 +99,15 @@ class GoveeClient
 				"r" => 255,
 				"g" => 255,
 				"b" => 255
+			];
+		}
+
+		if ($color == 'off') {
+			$this->body['cmd']['name'] = "color";
+			$this->body['cmd']['value'] = [
+				"r" => 50,
+				"g" => 50,
+				"b" => 50
 			];
 		}
 

@@ -303,23 +303,31 @@ class EndToEndTest extends TestCase
 		$this->assertEquals(null, $response['brightness']);
 		$this->assertEquals(null, $response['color']);
 		$this->assertEquals(true, $response['skipped']);
-
-
-
-//		$this->sunsetModel->fill(['executed' => "false"])->save();
-//		Session::put('sunsetAt', '2024-01-12 15:40:39');
-//
-//		$this->travelTo(Carbon::parse("2024-02-22 16:45:00")); // Saturday
-//
-//		$response = $this->makeRequest()
-//			->assertSuccessful()
-//			->json();
-//
-//		$this->assertEquals('off', $response['mode']);
-//		$this->assertEquals(null, $response['brightness']);
-//		$this->assertEquals(null, $response['color']);
-//		$this->assertEquals(true, $response['skipped']);
 	}
 
+
+	public function test_success_turn_off() {
+		$this->travelTo(Carbon::parse("2024-01-01 20:01:00"));
+		$this->assertEquals($this->sunsetAt, $this->sunsetModel->sunset_at);
+		Session::put('sunsetAt', '2024-01-01 15:40:39');
+
+		$response = $this->makeRequest()
+			->assertSuccessful()
+			->json();
+
+		$this->assertEquals('on', $response['mode']);
+		$this->assertEquals('100', $response['brightness']);
+		$this->assertEquals('white', $response['color']);
+
+		$this->travelTo(Carbon::parse("2024-01-01 23:40:00")); // Workday, turn off
+
+		$response = $this->makeRequest()
+			->assertSuccessful()->json();
+
+		$this->assertEquals('off', $response['mode']);
+		$this->assertEquals(null, $response['brightness']);
+		$this->assertEquals(null, $response['color']);
+		$this->assertEquals(false, $response['skipped']);
+	}
 
 }

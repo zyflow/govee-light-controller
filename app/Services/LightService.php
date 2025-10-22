@@ -77,18 +77,20 @@ class LightService
 
 	public function turnOffLights($now)
 	{
+		$client = new GoveeClient();
 		$this->brightness = null;
 		$this->color = null;
 		$this->mode = 'off';
-		$this->googleClient->setMode($this->mode);
+		$client->setColor('off');
 
 		if ($this->googleClient->getMode() === 'off') {
 			$this->skipped = true;
 			return;
 		}
+		$this->googleClient->setMode($this->mode);
 
-		$client = new GoveeClient();
 		$client->index('off');
+
 	}
 
 	public function checkIfMinutesBeforeTurnOff($now, $timeBeforeTurnOff)

@@ -18,3 +18,4 @@ db
 public/vendor/*
 *.log
 .env.testing
+google_cred.json

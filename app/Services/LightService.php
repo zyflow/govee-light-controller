@@ -194,15 +194,15 @@ class LightService
 			$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
 		}
 
-		if ($now->greaterThan($whitePhase) && $now->lessThan($brightOrangePhase)) {
-//			\Log::info(['p' => 2, $whitePhase->format('d H:i'), $brightOrangePhase->format('d H:i')]);
-			$this->turnOrangeAt22();
-		}
-
-		if ($now->greaterThan($brightOrangePhase) && $now->lessThan($redPhase)) {
-//			\Log::info(['p' => 3, $brightOrangePhase->format('d H:i'), $redPhase->format('d H:i')]);
-			$this->turnRedBeforeTurningOff();
-		}
+//		if ($now->greaterThan($whitePhase) && $now->lessThan($brightOrangePhase)) {
+////			\Log::info(['p' => 2, $whitePhase->format('d H:i'), $brightOrangePhase->format('d H:i')]);
+//			$this->turnOrangeAt22();
+//		}
+//
+//		if ($now->greaterThan($brightOrangePhase) && $now->lessThan($redPhase)) {
+////			\Log::info(['p' => 3, $brightOrangePhase->format('d H:i'), $redPhase->format('d H:i')]);
+//			$this->turnRedBeforeTurningOff();
+//		}
 
 		if ($now->greaterThan($redPhase)) {
 //			\Log::info([

@@ -169,7 +169,7 @@ class LightService
 
 		$this->skipped = false;
 
-		if ($now->greaterThan($sunset) && $now->lessThan($whitePhase)) {
+		if ($now->greaterThan($sunset) && $completed === TRUE) {
 //			\Log::info(['p' => 1]);
 			$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
 		}

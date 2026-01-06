@@ -164,28 +164,8 @@ class LightService
 		$this->googleClient->setPhases($sunsetDateObjClone);
 
 		$currentMode = $this->googleClient->getMode();
-
 		$whitePhase = $this->getPhaseDateTime('Phase1'); // 21:00  22:30
-		$brightOrangePhase = $this->getPhaseDateTime('Phase2'); // 23:00  00:10
 		$redPhase = $this->getPhaseDateTime('Phase3'); // 23:30  00:30
-
-//		dd($now, $sunset);
-
-//		dump([
-//				 'now' => $now->format('Y-m-d H:i'),
-//				 'sunset' => $sunset->format('H:i'),
-//				 'currmode' => $currentMode,
-//				 'weekend' => $isWeekend,
-//				 'dayOfWeek' => Carbon::now()->dayOfWeek,
-//				 'sessions' => [
-//					 'whitephase' => $whitePhase->toDateTimeString(),
-//					 'brightorangephase' => $brightOrangePhase->toDateTimeString(),
-//					 'redphase' => $redPhase->toDateTimeString(),
-//				 ]
-//			 ]);
-
-
-//		\Log::info(['assumed mode' => $currentMode]);
 
 		$this->skipped = false;
 
@@ -194,32 +174,10 @@ class LightService
 			$this->turnOnForSunset($completed, $sunsetAt, $this->client, $now);
 		}
 
-//		if ($now->greaterThan($whitePhase) && $now->lessThan($brightOrangePhase)) {
-////			\Log::info(['p' => 2, $whitePhase->format('d H:i'), $brightOrangePhase->format('d H:i')]);
-//			$this->turnOrangeAt22();
-//		}
-//
-//		if ($now->greaterThan($brightOrangePhase) && $now->lessThan($redPhase)) {
-////			\Log::info(['p' => 3, $brightOrangePhase->format('d H:i'), $redPhase->format('d H:i')]);
-//			$this->turnRedBeforeTurningOff();
-//		}
-
 		if ($now->greaterThan($redPhase)) {
-//			\Log::info([
-//						   'p' => 4,
-//						   'curr time ' => $now->format('Y-m-d H:i'),
-//						   'red phase datetome ' => $redPhase->format('Y-m-d H:i'),
-//						   'now is more than red ? =) ' => $now->greaterThan($redPhase)
-//					   ]);
-//			\Log::info(['new moded	' => $this->mode]);
 			$this->turnOffLights($now);
 		}
 
-//		\Log::info([
-//					   'cauri' => 'cauri',
-//					   'taga' => $now->format('Y-m-d H:i'),
-//					   'p3 date' => $redPhase->format('Y-m-d H:i')
-//				   ]);
 		return [
 			'brightness' => $this->brightness,
 			'color' => $this->color,
